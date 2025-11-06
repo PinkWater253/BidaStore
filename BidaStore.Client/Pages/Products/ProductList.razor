@@ -3,6 +3,48 @@
 
 <h1 class="mb-3">ProductList</h1>
 
+<<<<<<< HEAD
 @code {
     private List<Product>? products;
+=======
+@if(products == null)
+{
+    <h3><em>Loading...</em></h3>
+}
+else
+{
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark text-center">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tên sản phẩm</th>
+                <th scope="col">Hình ảnh</th>
+                <th scope="col">Đơn giá</th>
+                <th scope="col">Đánh giá</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in products)
+            {
+                <tr>
+                    <th scope="row">@item.Id</th>
+                    <td>@item.Title</td>
+                    <td>
+                        <img src="@item.Img" alt="@item.Title" width="100" />
+                    </td>
+                    <td>@item.Price?.ToString("C")</td>
+                    <td>@item.Rate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<Product>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await http.GetFromJsonAsync<List<Product>>("api/product");
+    }
+>>>>>>> c5b329e (Add project files.)
 }
