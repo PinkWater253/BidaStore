@@ -1,50 +1,168 @@
 ﻿@page "/Products"
-@inject HttpClient http
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using BidaStore.Client.Models
 
-<h1 class="mb-3">ProductList</h1>
+@* === THÊM COMPONENT MODAL VÀO TRANG === *@
+<ProductModal IsVisible="isModalVisible"
+              Product="currentProduct"
+              OnClose="CloseModal"
+              OnSaveSuccess="HandleSaveSuccess" />
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 @code {
     private List<Product>? products;
 =======
 @if(products == null)
+=======
+<h1 class="mb-3">Product List</h1>  
+
+<div class="mb-3">
+    @* === THAY ĐỔI NÚT NÀY === *@
+    <button class="btn btn-success" @onclick="ShowCreateModal">
+        <span class="oi oi-plus" aria-hidden="true"></span> Create New Product
+    </button>
+</div>
+
+@if (products == null)
+>>>>>>> 540ddf6 (Feature: Implement Product CRUD with Modal/Ajax-style delete and API endpoints.)
 {
-    <h3><em>Loading...</em></h3>
+    <p><em>Loading products...</em></p>
+}
+else if (products.Count == 0)
+{
+    <p><em>No products found.</em></p>
 }
 else
 {
-    <table class="table table-bordered table-striped table-hover">
-        <thead class="table-dark text-center">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
             <tr>
-                <th scope="col">#</th>
-                <th scope="col">Tên sản phẩm</th>
-                <th scope="col">Hình ảnh</th>
-                <th scope="col">Đơn giá</th>
-                <th scope="col">Đánh giá</th>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Content</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in products)
+            @foreach (var product in products)
             {
                 <tr>
-                    <th scope="row">@item.Id</th>
-                    <td>@item.Title</td>
                     <td>
-                        <img src="@item.Img" alt="@item.Title" width="100" />
+                        <img src="@(string.IsNullOrEmpty(product.Img) ? "https://via.placeholder.com/100" : product.Img)"
+                             alt="@product.Title" style="width: 100px; height: auto; border-radius: 5px;" />
                     </td>
-                    <td>@item.Price?.ToString("C")</td>
-                    <td>@item.Rate</td>
+                    <td>@product.Title</td>
+                    <td>@product.Price?.ToString("N0") VNĐ</td>
+                    <td>@product.Content</td>
+                    <td>
+                        @* === THAY ĐỔI NÚT NÀY === *@
+                        <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(product)">
+                            Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteProduct(product)">
+                            Delete
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
+
 @code {
     private List<Product>? products;
 
+    // --- THÊM CÁC BIẾN TRẠNG THÁI CHO MODAL ---
+    private bool isModalVisible = false;
+    private Product currentProduct = new();
+    // ------------------------------------------
+
     protected override async Task OnInitializedAsync()
     {
-        products = await http.GetFromJsonAsync<List<Product>>("api/product");
+        await LoadProductsAsync(); // Tải sản phẩm khi khởi tạo
     }
+<<<<<<< HEAD
 >>>>>>> c5b329e (Add project files.)
 }
+=======
+
+    // Tách logic tải sản phẩm ra hàm riêng
+    private async Task LoadProductsAsync()
+    {
+        try
+        {
+            products = await Http.GetFromJsonAsync<List<Product>>("api/Product");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching products: {ex.Message}");
+        }
+    }
+
+    // --- CÁC HÀM XỬ LÝ MODAL ---
+
+    // Mở modal ở chế độ "Create"
+    private void ShowCreateModal()
+    {
+        currentProduct = new Product(); // Tạo sản phẩm mới, rỗng
+        isModalVisible = true;
+    }
+
+    // Mở modal ở chế độ "Edit"
+    private void ShowEditModal(Product productToEdit)
+    {
+        // Rất quan trọng: Tạo một bản sao của sản phẩm để chỉnh sửa.
+        // Nếu không, việc thay đổi trên form sẽ thay đổi trực tiếp
+        // sản phẩm trong bảng (ngay cả khi chưa nhấn Save).
+        currentProduct = new Product
+        {
+            Id = productToEdit.Id,
+            Title = productToEdit.Title,
+            Content = productToEdit.Content,
+            Price = productToEdit.Price,
+            Img = productToEdit.Img,
+            Rate = productToEdit.Rate,
+            CategoryId = productToEdit.CategoryId
+            // Các thuộc tính khác nếu có...
+        };
+
+        isModalVisible = true;
+    }
+
+    // Được gọi khi ProductModal bị đóng
+    private void CloseModal()
+    {
+        isModalVisible = false;
+    }
+
+    // Được gọi khi ProductModal lưu thành công
+    private async Task HandleSaveSuccess()
+    {
+        isModalVisible = false;     // Đóng modal
+        await LoadProductsAsync();  // Tải lại danh sách sản phẩm
+    }
+
+    // --- HÀM XỬ LÝ XOÁ (Đã có từ trước) ---
+    private async Task DeleteProduct(Product productToDelete)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Bạn có chắc chắn muốn xoá sản phẩm: {productToDelete.Title}?");
+
+        if (confirmed)
+        {
+            try
+            {
+                await Http.DeleteAsync($"api/Product/{productToDelete.Id}");
+                await LoadProductsAsync(); // Tải lại danh sách
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Đã xảy ra lỗi khi xoá.");
+                Console.WriteLine($"Error deleting product: {ex.Message}");
+            }
+        }
+    }
+}
+>>>>>>> 540ddf6 (Feature: Implement Product CRUD with Modal/Ajax-style delete and API endpoints.)

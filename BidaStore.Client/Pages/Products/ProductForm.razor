@@ -1,0 +1,43 @@
+﻿@using BidaStore.Client.Models
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="Product" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <InputText id="title" @bind-Value="Product.Title" class="form-control" />
+        <ValidationMessage For="@(() => Product.Title)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="content" class="form-label">Content</label>
+        <InputTextArea id="content" @bind-Value="Product.Content" class="form-control" />
+        <ValidationMessage For="@(() => Product.Content)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="price" class="form-label">Price</label>
+        <InputNumber id="price" @bind-Value="Product.Price" class="form-control" />
+        <ValidationMessage For="@(() => Product.Price)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="img" class="form-label">Image URL</label>
+        <InputText id="img" @bind-Value="Product.Img" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">@ButtonText</button>
+    <a href="/Products" class="btn btn-link">Cancel</a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Product Product { get; set; } = new();
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Save";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+}
