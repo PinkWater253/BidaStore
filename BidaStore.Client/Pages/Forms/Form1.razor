@@ -1,0 +1,108 @@
+﻿@page "/giai-phuong-trinh"
+@inject HttpClient Http
+@using System.ComponentModel.DataAnnotations
+
+<h3>Giải Phương Trình Bậc Nhất (ax + b = 0) qua API</h3>
+
+<EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="p-3 border rounded shadow-sm">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Hệ số a:</label>
+        <InputNumber @bind-Value="model.A" class="form-control" />
+        <ValidationMessage For="@(() => model.A)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Hệ số b:</label>
+        <InputNumber @bind-Value="model.B" class="form-control" />
+        <ValidationMessage For="@(() => model.B)" class="text-danger" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@isLoading">
+        @if (isLoading)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        else
+        {
+            <span>Giải Phương Trình</span>
+        }
+    </button>
+</EditForm>
+
+@* HIỂN THỊ KẾT QUẢ TỪ API *@
+@if (!string.IsNullOrEmpty(apiResult))
+{
+    <hr />
+    <div class="alert alert-success mt-3">
+        <h4 class="alert-heading">Kết Quả Từ API:</h4>
+        <p class="mb-0 fs-5">@apiResult</p>
+    </div>
+}
+
+@* HIỂN THỊ LỖI (NẾU CÓ) *@
+@if (!string.IsNullOrEmpty(apiError))
+{
+    <hr />
+    <div class="alert alert-danger mt-3">
+        @apiError
+    </div>
+}
+
+@code {
+    // Model để chứa dữ liệu form
+    private EquationModel model = new EquationModel();
+
+    // Biến để lưu kết quả hoặc lỗi từ API
+    private string? apiResult;
+    private string? apiError;
+    private bool isLoading = false;
+
+    // Record này PHẢI KHỚP với record bạn định nghĩa ở Backend
+    private record EquationResult(string Message, double? Solution = null);
+
+    // Model cho EditForm
+    public class EquationModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập hệ số a")]
+        public double? A { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập hệ số b")]
+        public double? B { get; set; }
+    }
+
+    // Hàm được gọi khi form hợp lệ
+    private async Task HandleValidSubmit()
+    {
+        isLoading = true;
+        apiResult = null;
+        apiError = null;
+        StateHasChanged(); // Cập nhật UI để hiển thị spinner
+
+        try
+        {
+            // 1. Xây dựng URL với query parameters
+            string apiUrl = $"/api/form?a={model.A.Value}&b={model.B.Value}";
+
+            // 2. Gọi API bằng HttpClient đã được inject
+            // HttpClient trong Blazor Client đã tự động biết địa chỉ của server
+            var response = await Http.GetFromJsonAsync<EquationResult>(apiUrl);
+
+            // 3. Hiển thị kết quả
+            if (response != null)
+            {
+                apiResult = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            // 4. Xử lý nếu gọi API thất bại
+            apiError = $"Không thể gọi API. Lỗi: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
