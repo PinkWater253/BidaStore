@@ -1,0 +1,121 @@
+﻿@page "/report-issue"
+@using System.ComponentModel.DataAnnotations
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Báo Cáo Vấn Đề</h3>
+                </div>
+                <div class="card-body">
+
+                    @* --- PHẦN 1: HIỂN THỊ THƯ CẢM ƠN (SAU KHI SUBMIT) --- *@
+                    @if (isSubmitted)
+                    {
+                        <div class="alert alert-success">
+                            <h4>Thư Cảm Ơn</h4>
+                            <hr>
+                            <p>Chào <strong>@submittedModel.Name</strong>,</p>
+                            <p>Chúng tôi đã nhận được báo cáo của bạn với tiêu đề:</p>
+                            <blockquote class="blockquote">
+                                <p><em>"@submittedModel.Title"</em></p>
+                            </blockquote>
+                            <p>
+                                Một bản sao chi tiết đã được ghi nhận. Đội ngũ hỗ trợ sẽ xem xét vấn đề
+                                và phản hồi bạn qua email (<strong>@submittedModel.Email</strong>)
+                                trong thời gian sớm nhất.
+                            </p>
+                            <p class="mb-0">Cảm ơn bạn đã giúp chúng tôi cải thiện dịch vụ!</p>
+                        </div>
+                    }
+                    @* --- PHẦN 2: HIỂN THỊ FORM (TRƯỚC KHI SUBMIT) --- *@
+                    else
+                    {
+                        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Họ và Tên (*)</label>
+                                <InputText id="name" @bind-Value="model.Name" class="form-control" />
+                                <ValidationMessage For="@(() => model.Name)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email (*)</label>
+                                <InputText id="email" @bind-Value="model.Email" class="form-control" />
+                                <ValidationMessage For="@(() => model.Email)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Tiêu đề vấn đề (*)</label>
+                                <InputText id="title" @bind-Value="model.Title" class="form-control" />
+                                <ValidationMessage For="@(() => model.Title)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Nội dung chi tiết (*)</label>
+                                <InputTextArea id="message" @bind-Value="model.Message" class="form-control" rows="6" />
+                                <ValidationMessage For="@(() => model.Message)" class="text-danger" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Gửi Báo Cáo</button>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // 1. Model cho dữ liệu form
+    public class IssueReportModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
+        public string Name { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập email.")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập tiêu đề.")]
+        [StringLength(100, MinimumLength = 5, ErrorMessage = "Tiêu đề phải từ 5 đến 100 ký tự.")]
+        public string Title { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập nội dung.")]
+        [StringLength(1000, ErrorMessage = "Nội dung không quá 1000 ký tự.")]
+        public string Message { get; set; }
+    }
+
+    // 2. Biến trạng thái: = false (hiện form), = true (hiện thư cảm ơn)
+    private bool isSubmitted = false;
+
+    // 3. Model chính để binding cho EditForm
+    private IssueReportModel model = new IssueReportModel();
+
+    // 4. Model phụ để lưu trữ thông tin và hiển thị trên thư cảm ơn
+    // (Giúp form không bị "biến mất" dữ liệu ngay khi ẩn)
+    private IssueReportModel submittedModel = new IssueReportModel();
+
+    // 5. Xử lý khi form hợp lệ
+    private void HandleValidSubmit()
+    {
+        // (Đây là nơi bạn gọi API hoặc gửi email)
+        Console.WriteLine($"Đã nhận báo cáo từ: {model.Email} với tiêu đề: {model.Title}");
+
+        // Sao chép dữ liệu qua model hiển thị
+        submittedModel = new IssueReportModel
+        {
+            Name = model.Name,
+            Email = model.Email,
+            Title = model.Title,
+            Message = model.Message
+        };
+
+        // Bật cờ, chuyển trạng thái UI sang hiển thị thư cảm ơn
+        isSubmitted = true;
+
+        // StateHasChanged(); // Không bắt buộc vì OnValidSubmit thường tự kích hoạt re-render
+    }
+}
