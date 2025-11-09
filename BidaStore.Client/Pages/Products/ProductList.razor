@@ -5,18 +5,11 @@
 
 @* === THÊM COMPONENT MODAL VÀO TRANG === *@
 <ProductModal IsVisible="isModalVisible"
-              Product="currentProduct"
-              OnClose="CloseModal"
-              OnSaveSuccess="HandleSaveSuccess" />
+                     Product="currentProduct"
+                     OnClose="CloseModal"
+                     OnSaveSuccess="HandleSaveSuccess" />
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-@code {
-    private List<Product>? products;
-=======
-@if(products == null)
-=======
-<h1 class="mb-3">Product List</h1>  
+<h1 class="mb-3">Product List</h1>
 
 <div class="mb-3">
     @* === THAY ĐỔI NÚT NÀY === *@
@@ -26,7 +19,6 @@
 </div>
 
 @if (products == null)
->>>>>>> 540ddf6 (Feature: Implement Product CRUD with Modal/Ajax-style delete and API endpoints.)
 {
     <p><em>Loading products...</em></p>
 }
@@ -52,7 +44,7 @@ else
                 <tr>
                     <td>
                         <img src="@(string.IsNullOrEmpty(product.Img) ? "https://via.placeholder.com/100" : product.Img)"
-                             alt="@product.Title" style="width: 100px; height: auto; border-radius: 5px;" />
+                                            alt="@product.Title" style="width: 100px; height: auto; border-radius: 5px;" />
                     </td>
                     <td>@product.Title</td>
                     <td>@product.Price?.ToString("N0") VNĐ</td>
@@ -75,22 +67,18 @@ else
 @code {
     private List<Product>? products;
 
-    // --- THÊM CÁC BIẾN TRẠNG THÁI CHO MODAL ---
-    private bool isModalVisible = false;
+    // --- THÊM CÁC BIẾN TRẠNG THÁI CHO MODAL ---
+    private bool isModalVisible = false;
     private Product currentProduct = new();
-    // ------------------------------------------
+    // ------------------------------------------
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await LoadProductsAsync(); // Tải sản phẩm khi khởi tạo
-    }
-<<<<<<< HEAD
->>>>>>> c5b329e (Add project files.)
-}
-=======
+    }
 
-    // Tách logic tải sản phẩm ra hàm riêng
-    private async Task LoadProductsAsync()
+    // Tách logic tải sản phẩm ra hàm riêng
+    private async Task LoadProductsAsync()
     {
         try
         {
@@ -102,22 +90,22 @@ else
         }
     }
 
-    // --- CÁC HÀM XỬ LÝ MODAL ---
+    // --- CÁC HÀM XỬ LÝ MODAL ---
 
-    // Mở modal ở chế độ "Create"
-    private void ShowCreateModal()
+    // Mở modal ở chế độ "Create"
+    private void ShowCreateModal()
     {
         currentProduct = new Product(); // Tạo sản phẩm mới, rỗng
-        isModalVisible = true;
+        isModalVisible = true;
     }
 
-    // Mở modal ở chế độ "Edit"
-    private void ShowEditModal(Product productToEdit)
+    // Mở modal ở chế độ "Edit"
+    private void ShowEditModal(Product productToEdit)
     {
-        // Rất quan trọng: Tạo một bản sao của sản phẩm để chỉnh sửa.
-        // Nếu không, việc thay đổi trên form sẽ thay đổi trực tiếp
-        // sản phẩm trong bảng (ngay cả khi chưa nhấn Save).
-        currentProduct = new Product
+        // Rất quan trọng: Tạo một bản sao của sản phẩm để chỉnh sửa.
+        // Nếu không, việc thay đổi trên form sẽ thay đổi trực tiếp
+        // sản phẩm trong bảng (ngay cả khi chưa nhấn Save).
+        currentProduct = new Product
         {
             Id = productToEdit.Id,
             Title = productToEdit.Title,
@@ -126,27 +114,27 @@ else
             Img = productToEdit.Img,
             Rate = productToEdit.Rate,
             CategoryId = productToEdit.CategoryId
-            // Các thuộc tính khác nếu có...
-        };
+            // Các thuộc tính khác nếu có...
+        };
 
         isModalVisible = true;
     }
 
-    // Được gọi khi ProductModal bị đóng
-    private void CloseModal()
+    // Được gọi khi ProductModal bị đóng
+    private void CloseModal()
     {
         isModalVisible = false;
     }
 
-    // Được gọi khi ProductModal lưu thành công
-    private async Task HandleSaveSuccess()
+    // Được gọi khi ProductModal lưu thành công
+    private async Task HandleSaveSuccess()
     {
-        isModalVisible = false;     // Đóng modal
-        await LoadProductsAsync();  // Tải lại danh sách sản phẩm
-    }
+        isModalVisible = false;     // Đóng modal
+        await LoadProductsAsync();  // Tải lại danh sách sản phẩm
+    }
 
-    // --- HÀM XỬ LÝ XOÁ (Đã có từ trước) ---
-    private async Task DeleteProduct(Product productToDelete)
+    // --- HÀM XỬ LÝ XOÁ (Đã có từ trước) ---
+    private async Task DeleteProduct(Product productToDelete)
     {
         bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Bạn có chắc chắn muốn xoá sản phẩm: {productToDelete.Title}?");
 
@@ -156,7 +144,7 @@ else
             {
                 await Http.DeleteAsync($"api/Product/{productToDelete.Id}");
                 await LoadProductsAsync(); // Tải lại danh sách
-            }
+            }
             catch (Exception ex)
             {
                 await JSRuntime.InvokeVoidAsync("alert", "Đã xảy ra lỗi khi xoá.");
@@ -165,4 +153,3 @@ else
         }
     }
 }
->>>>>>> 540ddf6 (Feature: Implement Product CRUD with Modal/Ajax-style delete and API endpoints.)
