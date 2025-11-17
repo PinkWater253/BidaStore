@@ -1,5 +1,6 @@
 ﻿using BidaStore.API.Models; // Đảm bảo bạn đã tham chiếu đến BidaStore.Shared nếu dùng cách 2, hoặc giữ nguyên nếu dùng cách 1
 using BidaStore.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
