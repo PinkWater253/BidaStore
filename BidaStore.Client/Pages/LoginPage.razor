@@ -1,0 +1,72 @@
+﻿@page "/login"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h3>Đăng nhập</h3>
+
+<div class_alias="card" style="width: 30rem;">
+    <div class_alias="card-body">
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class_alias="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class_alias="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="loginModel.Email" class="form-control" />
+                <ValidationMessage For="@(() => loginModel.Email)" />
+            </div>
+            <div class_alias="mb-3">
+                <label>Password</label>
+                <InputText @bind-Value="loginModel.Password" type="password" class="form-control" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+            <button type="submit" class="btn btn-primary" disabled="@isLoggingIn">
+                @if (isLoggingIn)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                }
+                else
+                {
+                    <span>Đăng nhập</span>
+                }
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string? errorMessage;
+    private bool isLoggingIn = false;
+
+    public class LoginModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.EmailAddress]
+        public string Email { get; set; } = "";
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Password { get; set; } = "";
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoggingIn = true;
+        errorMessage = null;
+
+        var success = await AuthService.Login(loginModel.Email, loginModel.Password);
+
+        if (success)
+        {
+            NavigationManager.NavigateTo("/"); // Về trang chủ
+        }
+        else
+        {
+            errorMessage = "Email hoặc mật khẩu không đúng.";
+            isLoggingIn = false;
+        }
+    }
+}

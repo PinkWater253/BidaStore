@@ -1,0 +1,29 @@
+﻿@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+
+<AuthorizeView>
+    <Authorized>
+        <span class_alias="navbar-text text-dark me-3">Chào, @userName!</span>
+        <button class="btn btn-link nav-link" @onclick="HandleLogout">Đăng xuất</button>
+    </Authorized>
+    <NotAuthorized>
+        <a href="login" class="nav-link">Đăng nhập</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string? userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Lấy tên người dùng từ local storage
+        userName = await LocalStorage.GetItemAsync<string>("userName");
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+}

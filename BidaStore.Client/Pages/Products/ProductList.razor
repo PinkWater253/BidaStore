@@ -3,28 +3,25 @@
 @inject IJSRuntime JSRuntime
 @using BidaStore.Client.Models
 
-@* === THÊM COMPONENT MODAL VÀO TRANG === *@
-<ProductModal IsVisible="isModalVisible"
-                     Product="currentProduct"
-                     OnClose="CloseModal"
-                     OnSaveSuccess="HandleSaveSuccess" />
+@* ... (ProductModal component giữ nguyên) ... *@
 
 <h1 class="mb-3">Product List</h1>
 
-<div class="mb-3">
-    @* === THAY ĐỔI NÚT NÀY === *@
-    <button class="btn btn-success" @onclick="ShowCreateModal">
-        <span class="oi oi-plus" aria-hidden="true"></span> Create New Product
-    </button>
-</div>
+@* CHỈ HIỂN THỊ NÚT "CREATE" KHI ĐÃ ĐĂNG NHẬP *@
+<AuthorizeView>
+    <Authorized>
+        <div class="mb-3">
+            <button class="btn btn-success" @onclick="ShowCreateModal">
+                <span class="oi oi-plus" aria-hidden="true"></span> Create New Product
+            </button>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
 
 @if (products == null)
 {
-    <p><em>Loading products...</em></p>
-}
-else if (products.Count == 0)
-{
-    <p><em>No products found.</em></p>
+    @* ... (Loading... giữ nguyên) ... *@
 }
 else
 {
@@ -35,34 +32,42 @@ else
                 <th>Title</th>
                 <th>Price</th>
                 <th>Content</th>
-                <th>Actions</th>
+                <AuthorizeView>
+                    <Authorized>
+                        <th>Actions</th>
+                    </Authorized>
+                </AuthorizeView>
             </tr>
         </thead>
         <tbody>
             @foreach (var product in products)
             {
                 <tr>
-                    <td>
-                        <img src="@(string.IsNullOrEmpty(product.Img) ? "https://via.placeholder.com/100" : product.Img)"
-                                            alt="@product.Title" style="width: 100px; height: auto; border-radius: 5px;" />
-                    </td>
+                    @* ... (các <td> giữ nguyên) ... *@
+                    <td>...</td>
                     <td>@product.Title</td>
                     <td>@product.Price?.ToString("N0") VNĐ</td>
                     <td>@product.Content</td>
-                    <td>
-                        @* === THAY ĐỔI NÚT NÀY === *@
-                        <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(product)">
-                            Edit
-                        </button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteProduct(product)">
-                            Delete
-                        </button>
-                    </td>
+
+                    @* CHỈ HIỂN THỊ CÁC NÚT NÀY KHI ĐÃ ĐĂNG NHẬP *@
+                    <AuthorizeView>
+                        <Authorized>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(product)">
+                                    Edit
+                                </button>
+                                <button class_alias="btn btn-sm btn-danger" @onclick="() => DeleteProduct(product)">
+                                    Delete
+                                </button>
+                            </td>
+                        </Authorized>
+                    </AuthorizeView>
                 </tr>
             }
         </tbody>
     </table>
 }
+
 
 @code {
     private List<Product>? products;

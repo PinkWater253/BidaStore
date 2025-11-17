@@ -1,5 +1,8 @@
-using BidaStore.API.Services;
+﻿using BidaStore.API.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer; // Thêm
+using Microsoft.IdentityModel.Tokens; // Thêm
+using System.Text; // Thêm
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,13 +11,40 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseSqlServer(connectionString);
-}
-);
+});
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// === BẮT ĐẦU CẤU HÌNH JWT ===
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+builder.Services.AddAuthorization();
+// === KẾT THÚC CẤU HÌNH JWT ===
+
+// Cập nhật CORS Policy (sử dụng cấu hình an toàn hơn)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient",
+        b => b.WithOrigins(builder.Configuration["Jwt:Audience"]) // Chỉ cho phép Client
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+});
+
 
 var app = builder.Build();
 
@@ -25,15 +55,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-app.UseCors(policy => policy.AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowAnyOrigin()
-);
-
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+// Thay thế UseCors cũ bằng UseCors mới
+app.UseCors("AllowBlazorClient");
+
+// THÊM 2 DÒNG NÀY (Thứ tự rất quan trọng)
+app.UseAuthentication(); // 1. Xác thực (bạn là ai?)
+app.UseAuthorization(); // 2. Phân quyền (bạn được làm gì?)
 
 app.MapControllers();
 
