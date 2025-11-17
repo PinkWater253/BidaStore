@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BidaStore.API.Models;
+namespace DataShared.Library.Models;
 
 public partial class Post
 {
@@ -13,7 +13,7 @@ public partial class Post
 
     public string? Img { get; set; }
 
-    public DateTime CreateAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
 

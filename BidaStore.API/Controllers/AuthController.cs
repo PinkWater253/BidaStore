@@ -1,5 +1,4 @@
-﻿using BidaStore.API.Models;
-using BidaStore.API.Services;
+﻿using DataShared.Library.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

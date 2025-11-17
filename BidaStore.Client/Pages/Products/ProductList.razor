@@ -1,7 +1,6 @@
 ﻿@page "/Products"
-@inject HttpClient Http
+@inject IService<Product> ProductService
 @inject IJSRuntime JSRuntime
-@using BidaStore.Client.Models
 
 @* ... (ProductModal component giữ nguyên) ... *@
 
@@ -19,9 +18,10 @@
 </AuthorizeView>
 
 
+
 @if (products == null)
 {
-    @* ... (Loading... giữ nguyên) ... *@
+    <p>Loading...</p>
 }
 else
 {
@@ -46,8 +46,8 @@ else
                     @* ... (các <td> giữ nguyên) ... *@
                     <td>...</td>
                     <td>@product.Title</td>
-                    <td>@product.Price?.ToString("N0") VNĐ</td>
-                    <td>@product.Content</td>
+                    <td>@product.Price.ToString("N0") VNĐ</td>
+                    <td>@product.ShortDescription</td>
 
                     @* CHỈ HIỂN THỊ CÁC NÚT NÀY KHI ĐÃ ĐĂNG NHẬP *@
                     <AuthorizeView>
@@ -69,29 +69,38 @@ else
 }
 
 
+<ProductModal IsVisible="isModalVisible"
+              Product="currentProduct"
+              OnClose="CloseModal"
+              OnSaveSuccess="HandleSaveSuccess" />
+
 @code {
     private List<Product>? products;
+    private bool isLoading = true;
+    private string? errorMessage;
 
-    // --- THÊM CÁC BIẾN TRẠNG THÁI CHO MODAL ---
-    private bool isModalVisible = false;
+    // --- THÊM CÁC BIẾN TRẠNG THÁI CHO MODAL ---
+    private bool isModalVisible = false;
     private Product currentProduct = new();
-    // ------------------------------------------
+    // ------------------------------------------
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await LoadProductsAsync(); // Tải sản phẩm khi khởi tạo
-    }
+    }
 
-    // Tách logic tải sản phẩm ra hàm riêng
-    private async Task LoadProductsAsync()
+    // Tách logic tải sản phẩm ra hàm riêng
+    private async Task LoadProductsAsync()
     {
+        isLoading = true;
+        errorMessage = null;
         try
         {
-            products = await Http.GetFromJsonAsync<List<Product>>("api/Product");
+            products = await ProductService.GetItemsAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching products: {ex.Message}");
+            errorMessage = $"Không thể kết nối API. Lỗi chi tiết : {ex.Message}";
         }
     }
 
@@ -114,10 +123,10 @@ else
         {
             Id = productToEdit.Id,
             Title = productToEdit.Title,
-            Content = productToEdit.Content,
+            ShortDescription = productToEdit.ShortDescription,
             Price = productToEdit.Price,
             Img = productToEdit.Img,
-            Rate = productToEdit.Rate,
+            Rating = productToEdit.Rating,
             CategoryId = productToEdit.CategoryId
             // Các thuộc tính khác nếu có...
         };
@@ -147,7 +156,7 @@ else
         {
             try
             {
-                await Http.DeleteAsync($"api/Product/{productToDelete.Id}");
+                await ProductService.DeleteItemAsync(productToDelete.Id);
                 await LoadProductsAsync(); // Tải lại danh sách
             }
             catch (Exception ex)

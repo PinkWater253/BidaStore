@@ -1,8 +1,8 @@
-﻿using BidaStore.API.Services;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer; // Thêm
 using Microsoft.IdentityModel.Tokens; // Thêm
-using System.Text; // Thêm
+using System.Text;
+using DataShared.Library.Models; // Thêm
 
 var builder = WebApplication.CreateBuilder(args);
 
