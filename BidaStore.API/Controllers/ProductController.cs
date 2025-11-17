@@ -1,5 +1,4 @@
-﻿using BidaStore.API.Models; // Đảm bảo bạn đã tham chiếu đến BidaStore.Shared nếu dùng cách 2, hoặc giữ nguyên nếu dùng cách 1
-using BidaStore.API.Services;
+﻿using DataShared.Library.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +46,7 @@ namespace BidaStore.API.Controllers
             }
 
             // Thêm một số giá trị mặc định nếu cần
-            product.CreateAt = DateTime.Now;
+            product.CreatedAt = DateTime.Now;
 
             _context.Products.Add(product);
             _context.SaveChanges();
@@ -73,10 +72,10 @@ namespace BidaStore.API.Controllers
 
             // Cập nhật các thuộc tính từ product gửi lên
             existingProduct.Title = product.Title;
-            existingProduct.Content = product.Content;
+            existingProduct.ShortDescription = product.ShortDescription;
             existingProduct.Price = product.Price;
             existingProduct.Img = product.Img;
-            existingProduct.Rate = product.Rate;
+            existingProduct.Rating = product.Rating;
             existingProduct.CategoryId = product.CategoryId;
             existingProduct.UpdateAt = DateTime.Now; // Cập nhật thời gian
 

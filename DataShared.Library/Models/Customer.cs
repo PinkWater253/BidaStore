@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BidaStore.API.Models;
+namespace DataShared.Library.Models;
 
 public partial class Customer
 {
@@ -15,23 +15,23 @@ public partial class Customer
 
     public string? Phone { get; set; }
 
-    public string? Email { get; set; }
+    public string Email { get; set; } = null!;
 
     public string? Img { get; set; }
 
-    public DateTime? RegisteredAt { get; set; }
+    public DateTime RegisteredAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
 
     public DateOnly? DateOfBirth { get; set; }
 
-    public string? Password { get; set; }
+    public string Password { get; set; } = null!;
 
-    public string? RandomKey { get; set; }
+    public string? VerificationToken { get; set; }
 
     public bool? IsActive { get; set; }
 
-    public int? Role { get; set; }
+    public int? RoleId { get; set; }
 
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 

@@ -1,5 +1,4 @@
-﻿@inject HttpClient Http
-@using BidaStore.Client.Models
+﻿@inject IService<Product> ProductService
 
 <style>
     .modal-backdrop {
@@ -83,12 +82,12 @@
             if (Product.Id == 0) // Chế độ Create
             {
                 // Gọi API POST
-                var response = await Http.PostAsJsonAsync("api/Product", Product);
+                var response = await ProductService.CreateItemAsync(Product);
             }
             else // Chế độ Edit
             {
                 // Gọi API PUT
-                var response = await Http.PutAsJsonAsync($"api/Product/{Product.Id}", Product);
+                var response = await ProductService.UpdateItemAsync(Product);
             }
 
             // Báo cho cha (ProductList) biết là đã lưu thành công

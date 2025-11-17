@@ -9,6 +9,10 @@ using BidaStore.Client.Auth;
 using BidaStore.Client.Services;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using DataShared.Library.Services;
+using DataShared.Library.Models;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -36,5 +40,7 @@ builder.Services.AddHttpClient("BidaStore.API", client =>
 // 5. Đăng ký HttpClient mặc định cho các components
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("BidaStore.API"));
+
+builder.Services.AddScoped<IService<Product>, ProductService>();
 
 await builder.Build().RunAsync();
