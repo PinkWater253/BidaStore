@@ -1,0 +1,139 @@
+﻿@page "/admin/products"
+@inject IService<Product> ProductService
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        @if (products == null)
+        {
+            <h3>Loading...</h3>
+        }
+        else
+        {
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Price</th>
+                        <th>Content</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in products)
+                    {
+                        <tr>
+                            @* ... (các <td> giữ nguyên) ... *@
+                            <td>...</td>
+                            <td>@product.Title</td>
+                            <td>@product.Price VNĐ</td>
+                            <td>@product.ShortDescription</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(product)">
+                                    Edit
+                                </button>
+                                <button class_alias="btn btn-sm btn-danger" @onclick="() => DeleteProduct(product)">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        }
+    </Authorized>
+</AuthorizeView>
+@code {
+    private List<Product>? products;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    // --- THÊM CÁC BIẾN TRẠNG THÁI CHO MODAL ---
+    private bool isModalVisible = false;
+    private Product currentProduct = new();
+    // ------------------------------------------
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductsAsync(); // Tải sản phẩm khi khởi tạo
+    }
+
+    // Tách logic tải sản phẩm ra hàm riêng
+    private async Task LoadProductsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            products = await ProductService.GetItemsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Không thể kết nối API. Lỗi chi tiết : {ex.Message}";
+        }
+    }
+
+    // --- CÁC HÀM XỬ LÝ MODAL ---
+
+    // Mở modal ở chế độ "Create"
+    private void ShowCreateModal()
+    {
+        currentProduct = new Product(); // Tạo sản phẩm mới, rỗng
+        isModalVisible = true;
+    }
+
+    // Mở modal ở chế độ "Edit"
+    private void ShowEditModal(Product productToEdit)
+    {
+        currentProduct = new Product
+        {
+            Id = productToEdit.Id,
+            Title = productToEdit.Title,
+            ShortDescription = productToEdit.ShortDescription,
+            Price = productToEdit.Price,
+            Img = productToEdit.Img,
+            Rating = productToEdit.Rating,
+            CategoryId = productToEdit.CategoryId,
+            BrandId = productToEdit.BrandId,
+            UpdateAt = DateTime.Now,
+        };
+
+        isModalVisible = true;
+    }
+
+    // Được gọi khi ProductModal bị đóng
+    private void CloseModal()
+    {
+        isModalVisible = false;
+    }
+
+    // Được gọi khi ProductModal lưu thành công
+    private async Task HandleSaveSuccess()
+    {
+        isModalVisible = false;     // Đóng modal
+        await LoadProductsAsync();  // Tải lại danh sách sản phẩm
+    }
+
+    // --- HÀM XỬ LÝ XOÁ (Đã có từ trước) ---
+    private async Task DeleteProduct(Product productToDelete)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Bạn có chắc chắn muốn xoá sản phẩm: {productToDelete.Title}?");
+
+        if (confirmed)
+        {
+            try
+            {
+                await ProductService.DeleteItemAsync(productToDelete.Id);
+                await LoadProductsAsync();
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Đã xảy ra lỗi khi xoá.");
+                Console.WriteLine($"Error deleting product: {ex.Message}");
+            }
+        }
+    }
+}

@@ -18,17 +18,19 @@ namespace BidaStore.Client.Auth
             if (keyValuePairs != null)
             {
                 // Trích xuất các claims mà chúng ta đã định nghĩa ở API
-                if (keyValuePairs.TryGetValue(ClaimTypes.Role, out var roles))
+                if (keyValuePairs.TryGetValue("role", out var roles) || keyValuePairs.TryGetValue(ClaimTypes.Role, out roles))
                 {
                     if (roles is JsonElement rolesElem && rolesElem.ValueKind == JsonValueKind.Array)
                     {
                         foreach (var role in rolesElem.EnumerateArray())
                         {
+                            // QUAN TRỌNG: Khi thêm vào List<Claim>, PHẢI dùng ClaimTypes.Role
                             claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
                         }
                     }
                     else
                     {
+                        // QUAN TRỌNG: Khi thêm vào List<Claim>, PHẢI dùng ClaimTypes.Role
                         claims.Add(new Claim(ClaimTypes.Role, roles.ToString()));
                     }
                 }

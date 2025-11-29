@@ -52,13 +52,18 @@ namespace BidaStore.API.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
 
+            string roleName = "User"; // Mặc định là User
+            if(customer.Role == 1)
+            {
+                roleName = "Admin";
+            }
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, customer.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, customer.Email),
                 new Claim(ClaimTypes.Name, customer.FirstName ?? customer.Email), // Thêm Name claim
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                // new Claim(ClaimTypes.Role, customer.Role.ToString() ?? "User") // (Sẽ thêm Role sau)
+                new Claim(ClaimTypes.Role, roleName)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
