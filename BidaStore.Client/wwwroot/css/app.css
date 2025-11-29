@@ -1,5 +1,18 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+﻿html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Lấy từ app.css */
+}
+
+/* Định nghĩa font-size cơ bản */
+html {
+    font-size: 14px; /* Lấy từ site.css */
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
 }
 
 h1:focus {
@@ -7,7 +20,7 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: #0071c1; /* Lấy từ app.css */
 }
 
 .btn-primary {
@@ -17,7 +30,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -100,4 +113,62 @@ a, .btn-link {
 
 code {
     color: #c02d76;
+}
+
+/* --- CSS cho Sidebar Flyout Menu --- */
+
+/* Thiết lập vị trí tương đối cho mục cha để menu con bám theo */
+.nav-item-flyout {
+    position: relative;
+}
+
+/* Menu con (ẩn mặc định) */
+.flyout-menu {
+    display: none;
+    position: absolute;
+    left: 100%; /* Đẩy sang bên phải của sidebar */
+    top: 0;
+    width: 220px; /* Độ rộng của menu con */
+    background-color: #fff;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 0;
+    list-style: none;
+    z-index: 9999; /* Đảm bảo hiển thị trên cùng */
+    border-left: 3px solid #4154f1; /* Đường viền trang trí */
+}
+
+/* Hiển thị menu con khi hover vào mục cha */
+.nav-item-flyout:hover > .flyout-menu {
+    display: block;
+}
+
+/* Style cho các link trong menu con */
+.flyout-menu li a {
+    display: block;
+    padding: 8px 15px;
+    color: #012970;
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+    .flyout-menu li a:hover {
+        color: #4154f1;
+        background-color: #f6f9ff;
+        transform: translateX(5px); /* Hiệu ứng trượt nhẹ */
+    }
+
+/* Tiêu đề trong menu con */
+.flyout-header {
+    font-weight: bold;
+    padding: 5px 15px;
+    color: #899bbd;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* Đảm bảo sidebar gốc cho phép hiển thị nội dung tràn ra ngoài (nếu bị cắt) */
+#sidebar {
+    overflow: visible !important;
 }

@@ -18,4 +18,20 @@
     <ProjectReference Include="..\DataShared.Library\DataShared.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\css\themes.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>themes.css</DependentUpon>
+    </Content>
+    <Content Update="wwwroot\css\themes.css">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>themes.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
 </Project>

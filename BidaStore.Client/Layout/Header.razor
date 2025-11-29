@@ -1,0 +1,84 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject BidaStore.Client.Services.IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@using System.Security.Claims
+
+<header id="header" class="header fixed-top d-flex align-items-center">
+
+    <div class="d-flex align-items-center justify-content-between">
+        <a href="/" class="logo d-flex align-items-center">
+            <img src="img/logo.png" alt="">
+            <span class="d-none d-lg-block">BidaStore</span>
+        </a>
+        <i class="bi bi-list toggle-sidebar-btn" @onclick="HandleToggleSidebar"></i> @* Dùng Blazor @onclick *@
+    </div><div class="search-bar">
+        <form class="search-form d-flex align-items-center">
+            <input type="text" name="SearchString" placeholder="Nhập tên người dùng..." class="rounded-pill" value="" />
+            <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+        </form>
+    </div><nav class="header-nav ms-auto">
+        <ul class="d-flex align-items-center">
+
+            <li class="nav-item d-block d-lg-none">
+                <a class="nav-link nav-icon search-bar-toggle " href="#">
+                    <i class="bi bi-search"></i>
+                </a>
+            </li>@* Notification và Message Dropdown Items (Giữ nguyên vì là HTML tĩnh) *@
+            @* ... (Phần Notification và Message Dropdown) ... *@
+
+            <AuthorizeView>
+                <Authorized>
+                <li class="nav-item dropdown pe-3">
+
+                <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                    <img src="" alt="Profile" class="rounded-circle">
+                            <span class="d-none d-md-block dropdown-toggle ps-2">@context.User.FindFirst(ClaimTypes.Name)?.Value</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                    <li class="dropdown-header">
+                                <h6>@context.User.FindFirst(ClaimTypes.Name)?.Value</h6>
+                                <span>@context.User.FindFirst(ClaimTypes.Role)?.Value</span>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <NavLink class="dropdown-item d-flex align-items-center" href="profile">
+                            <i class="bi bi-person"></i>
+                            <span>Trang cá nhân</span>
+                        </NavLink>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+
+                    @* Nút Đăng xuất - Chuyển sang Blazor @onclick *@
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center" @onclick="HandleLogout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </li>
+                </ul>
+            </li>
+
+                </Authorized>
+            </AuthorizeView>
+        </ul>
+    </nav>
+</header>
+
+@code {
+    // EventCallback để MainLayout có thể lắng nghe sự kiện toggle sidebar
+    [Parameter]
+    public EventCallback OnToggleSidebar { get; set; }
+
+    private async Task HandleToggleSidebar()
+    {
+        await OnToggleSidebar.InvokeAsync();
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.Logout();
+        NavigationManager.NavigateTo("/login", true);
+    }
+}

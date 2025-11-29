@@ -38,7 +38,7 @@ namespace BidaStore.API.Controllers
 
         // POST: api/Product
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateProduct([FromBody] Product product)
         {
 
@@ -55,7 +55,7 @@ namespace BidaStore.API.Controllers
         
         // PUT: api/Product/5
         [HttpPut("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateProduct(int id, [FromBody] Product product)
         {
         
@@ -95,7 +95,7 @@ namespace BidaStore.API.Controllers
         
         // DELETE: api/Product/5
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteProduct(int id)
         {
             var product = _context.Products.Find(id);
