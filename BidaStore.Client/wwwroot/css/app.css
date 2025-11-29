@@ -117,33 +117,30 @@ code {
 
 /* --- CSS cho Sidebar Flyout Menu --- */
 
-/* Thiết lập vị trí tương đối cho mục cha để menu con bám theo */
+/* --- CSS cho Sidebar Flyout Menu --- */
 .nav-item-flyout {
     position: relative;
 }
 
-/* Menu con (ẩn mặc định) */
 .flyout-menu {
     display: none;
     position: absolute;
-    left: 100%; /* Đẩy sang bên phải của sidebar */
+    left: 100%;
     top: 0;
-    width: 220px; /* Độ rộng của menu con */
+    width: 220px;
     background-color: #fff;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 0 4px 4px 0;
     padding: 10px 0;
     list-style: none;
-    z-index: 9999; /* Đảm bảo hiển thị trên cùng */
-    border-left: 3px solid #4154f1; /* Đường viền trang trí */
+    z-index: 9999;
+    border-left: 3px solid #4154f1;
 }
 
-/* Hiển thị menu con khi hover vào mục cha */
 .nav-item-flyout:hover > .flyout-menu {
     display: block;
 }
 
-/* Style cho các link trong menu con */
 .flyout-menu li a {
     display: block;
     padding: 8px 15px;
@@ -156,19 +153,20 @@ code {
     .flyout-menu li a:hover {
         color: #4154f1;
         background-color: #f6f9ff;
-        transform: translateX(5px); /* Hiệu ứng trượt nhẹ */
+        transform: translateX(5px);
     }
 
-/* Tiêu đề trong menu con */
 .flyout-header {
     font-weight: bold;
     padding: 5px 15px;
     color: #899bbd;
     font-size: 12px;
     text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
 }
 
-/* Đảm bảo sidebar gốc cho phép hiển thị nội dung tràn ra ngoài (nếu bị cắt) */
+/* Quan trọng để menu không bị cắt */
 #sidebar {
     overflow: visible !important;
 }
