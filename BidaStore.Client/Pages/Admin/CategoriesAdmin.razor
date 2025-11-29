@@ -1,0 +1,46 @@
+﻿@page "/admin/categories"
+@using DataShared.Library.Models
+@inject IService<Category> CategoryService
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Quản lý Loại sản phẩm (Admin)</h3>
+
+@if (categories == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!categories.Any())
+{
+    <p>Chưa có danh mục.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr><th>Id</th><th>Title</th><th>Content</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var c in categories)
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.Title</td>
+                    <td>@c.Content</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary">Edit</button>
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Category>? categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetItemsAsync();
+    }
+}

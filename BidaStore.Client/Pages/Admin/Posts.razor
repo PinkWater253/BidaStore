@@ -1,0 +1,57 @@
+﻿@page "/admin/posts"
+@using DataShared.Library.Models
+@inject IService<Post> PostService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Quản lý Bài viết</h3>
+
+<p>
+    <button class="btn btn-primary" @onclick="Create">Tạo bài viết mới</button>
+</p>
+
+@if (posts == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!posts.Any())
+{
+    <p>Chưa có bài viết.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var p in posts)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@p.Title</strong>
+                    <div class="text-muted small">@p.CreateAt?.ToString("g")</div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary me-1" @onclick="() => Edit(p.Id)">Sửa</button>
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeletePost(p.Id)">Xóa</button>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Post>? posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await PostService.GetItemsAsync();
+    }
+
+    void Create() => NavigationManager.NavigateTo("/admin/posts/create");
+    void Edit(int id) => NavigationManager.NavigateTo($"/admin/posts/edit/{id}");
+
+    async Task DeletePost(int id)
+    {
+        var ok = await PostService.DeleteItemAsync(id);
+        if (ok) posts = await PostService.GetItemsAsync();
+    }
+}

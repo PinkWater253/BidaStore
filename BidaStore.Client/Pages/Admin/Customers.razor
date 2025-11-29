@@ -1,0 +1,79 @@
+﻿@page "/admin/customers"
+@using DataShared.Library.Models
+@using System.Security.Claims
+@inject IService<Customer> CustomerService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        @if (customers == null)
+        {
+            <p>Đang tải...</p>
+        }
+        else if (!customers.Any())
+        {
+            <p>Chưa có người dùng.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Họ</th>
+                        <th>Tên</th>
+                        <th>Email</th>
+                        <th>Đăng ký</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in customers)
+                    {
+                        <tr>
+                            <td>@c.Id</td>
+                            <td>@c.FirstName</td>
+                            <td>@c.LastName</td>
+                            <td>@c.Email</td>
+                            <td>@(c.RegisteredAt?.ToString("g") ?? "-")</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" @onclick="() => Edit(c.Id)">Sửa</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteCustomer(c.Id)">Xóa</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+
+    </Authorized>
+</AuthorizeView>
+<h3>Quản lý Người dùng</h3>
+
+@code {
+    private List<Customer>? customers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerService.GetItemsAsync();
+    }
+
+    void Edit(int id) => NavigationManager.NavigateTo($"/admin/customers/edit/{id}");
+
+    async Task DeleteCustomer(int id)
+    {
+        var ok = await CustomerService.DeleteItemAsync(id);
+        if (ok)
+        {
+            customers = await CustomerService.GetItemsAsync();
+        }
+        else
+        {
+            // simple feedback
+            Console.WriteLine($"Delete failed for customer {id}");
+        }
+    }
+}

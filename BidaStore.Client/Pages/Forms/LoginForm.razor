@@ -1,0 +1,165 @@
+﻿@using Microsoft.AspNetCore.Components
+@using DataShared.Library.Models
+@inject IService<Customer> CustomerService
+
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+
+    <div class="modal d-block" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Đăng ký tài khoản</h5>
+                    <button type="button" class="btn-close" @onclick="() => Close()" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label class="form-label">Họ và tên</label>
+                            <InputText @bind-Value="FullName" class="form-control"
+                                placeholder="Nhập họ và tên" />
+                            <ValidationMessage For="@(() => FullName)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="model.Email" class="form-control" placeholder="Nhập email" />
+                            <ValidationMessage For="@(() => model.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Mật khẩu</label>
+                            <InputText @bind-Value="model.Password" type="@PasswordInputType" class="form-control" />
+                            <ValidationMessage For="@(() => model.Password)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Xác nhận mật khẩu</label>
+                            <InputText @bind-Value="PasswordConfirm" type="@ConfirmPasswordInputType"
+                                class="form-control" />
+                            <ValidationMessage For="@(() => PasswordConfirm)" />
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <InputCheckbox class="form-check-input" @bind-Value="acceptTerms" id="termsCheck" />
+                            <label class="form-check-label" for="termsCheck">
+                                Tôi đồng ý với <a href="#">điều khoản</a> và <a href="#">chính sách</a>.
+                            </label>
+                            <ValidationMessage For="@(() => acceptTerms)" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"
+                                        aria-hidden="true"></span>
+                                    <p>Đang xử lý...</p>
+                                }
+                                else
+                                {
+                                    <span>Đăng ký</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public EventCallback OnRegisterSuccess { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    private Customer model = new();
+    private EditContext editContext;
+    private ValidationMessageStore messageStore;
+
+    private string FullName { get; set; } = "";
+    private string PasswordConfirm { get; set; } = "";
+    private bool acceptTerms;
+    private bool isSubmitting;
+
+    private bool showPassword;
+    private bool showConfirmPassword;
+
+    private string PasswordInputType => showPassword ? "text" : "password";
+    private string ConfirmPasswordInputType => showConfirmPassword ? "text" : "password";
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+        messageStore = new ValidationMessageStore(editContext);
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        messageStore.Clear();
+        editContext.NotifyValidationStateChanged();
+
+        if (string.IsNullOrWhiteSpace(FullName))
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(FullName)), "Vui lòng nhập họ và tên.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PasswordConfirm))
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(PasswordConfirm)), "Vui lòng xác nhận mật khẩu.");
+        }
+
+        if (model.Password != PasswordConfirm)
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(PasswordConfirm)), "Mật khẩu xác nhận không khớp.");
+        }
+
+        if (!acceptTerms)
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(acceptTerms)), "Bạn phải đồng ý với điều khoản.");
+        }
+
+        var parts = FullName?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+        if (parts.Length > 0)
+        {
+            model.FirstName = parts.Length > 1 ? string.Join(" ", parts[..^1]) : string.Empty;
+            model.LastName = parts[^1];
+        }
+
+        model.RegisteredAt = DateTime.UtcNow;
+
+        isSubmitting = true;
+        try
+        {
+            var ok = await CustomerService.CreateItemAsync(model);
+            if (ok)
+            {
+                await OnRegisterSuccess.InvokeAsync();
+            }
+            else
+            {
+                messageStore.Add(new FieldIdentifier(editContext.Model, string.Empty), "Đăng ký thất bại. Vui lòng thử lại.");
+                editContext.NotifyValidationStateChanged();
+            }
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

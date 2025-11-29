@@ -1,0 +1,73 @@
+﻿@page "/my-orders"
+@using DataShared.Library.Models
+@using System.Security.Claims
+@inject IService<Order> OrderService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "User")]
+
+<h3>Đơn hàng của tôi</h3>
+
+@if (orders == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!orders.Any())
+{
+    <p>Bạn chưa có đơn hàng nào.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Ngày</th>
+                <th>Trạng thái</th>
+                <th>Tổng</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in orders)
+            {
+                <tr>
+                    <td>@o.Id</td>
+                    <td>@(o.CreateAt?.ToString("g") ?? "-")</td>
+                    <td>@o.OrderStatus</td>
+                    <td>@(o.OrderDetails?.Sum(d => d.Price * d.Quantity) ?? 0)</td>
+                    <td><button class="btn btn-sm btn-secondary" @onclick="() => View(o.Id)">Chi tiết</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Order>? orders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var sub = user.FindFirst(c => c.Type == System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+        if (!int.TryParse(sub, out var customerId))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        // Load all orders and filter client-side (server filtering can be implemented later)
+        var all = await OrderService.GetItemsAsync();
+        orders = all?.Where(o => o.CustomerId == customerId).ToList() ?? new();
+    }
+
+    void View(int id) => NavigationManager.NavigateTo($"/orders/{id}");
+}

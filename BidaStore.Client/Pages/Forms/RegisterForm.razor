@@ -1,0 +1,193 @@
+﻿@page "/register"
+@using DataShared.Library.Models
+@inject IService<Customer> CustomerService
+@inject NavigationManager NavigationManager
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="row bg-white shadow p-0" style="max-width: 800px; width: 100%; border-radius: 2rem; overflow: hidden;">
+        <!-- Cột hình ảnh -->
+        <div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-light p-3">
+            <img src="img/logo.png" class="img-fluid rounded-start-4" alt="Placeholder Image" />
+        </div>
+
+        <div class="d-flex d-md-none align-items-center justify-content-center bg-light ">
+            <img src="img/logo.png" class="img-fluid rounded-start-4" alt="Placeholder Image" width="100" height="100" />
+            <h3 class="text-center">Đăng ký</h3>
+        </div>
+
+        <!-- Cột form -->
+        <div class="col-md-7 p-4">
+            <h3 class="text-center mb-4">Đăng ký tài khoản</h3>
+            <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <!-- Tên người dùng -->
+                <div class="mb-3">
+                    <label for="nameInput" class="form-label font-monospace fw-bold">Họ và tên</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <InputText @bind-Value="FullName" class="form-control" placeholder="Nhập họ và tên" />
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="emailInput" class="form-label font-monospace fw-bold">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <InputText @bind-Value="model.Email" class="form-control" placeholder="Nhập email" />
+                    </div>
+                    <ValidationMessage For="@(() => model.Email)" />
+                </div>
+
+                <!-- Mật khẩu -->
+                <div class="mb-3">
+                    <label for="passwordInput" class="form-label font-monospace fw-bold">Mật khẩu</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <InputText @bind-Value="model.Password" type="@PasswordInputType" id="passwordInput" class="form-control" placeholder="Nhập mật khẩu" />
+                        <button type="button" class="input-group-text btn btn-light" @onclick="TogglePasswordVisibility" aria-label="Toggle password visibility">
+                            <i class="bi @(showPassword ? "bi-eye" : "bi-eye-slash")"></i>
+                        </button>
+                    </div>
+                    <ValidationMessage For="@(() => model.Password)" />
+                </div>
+
+                <!-- Xác nhận mật khẩu -->
+                <div class="mb-3">
+                    <label for="confirmPasswordInput" class="form-label font-monospace fw-bold">Xác nhận mật khẩu</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                        <InputText @bind-Value="PasswordConfirm" type="@ConfirmPasswordInputType" class="form-control" placeholder="Nhập lại mật khẩu" />
+                        <button type="button" class="input-group-text btn btn-light" @onclick="ToggleConfirmPasswordVisibility" aria-label="Toggle confirm password">
+                            <i class="bi @(showConfirmPassword ? "bi-eye" : "bi-eye-slash")"></i>
+                        </button>
+                    </div>
+                    <ValidationMessage For="@(() => PasswordConfirm)" />
+                </div>
+
+                <!-- Checkbox điều khoản -->
+                <div class="form-check mb-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="acceptTerms" id="termsCheck" />
+                    <label class="form-check-label" for="termsCheck">
+                        Tôi đồng ý với <a href="#">điều khoản</a> và <a href="#">chính sách</a>.
+                    </label>
+                    <ValidationMessage For="@(() => acceptTerms)" />
+                </div>
+
+                <!-- Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <p>Đang xử lý ...</p>
+                        }
+                        else
+                        {
+                            <span>Đăng ký</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Customer model = new();
+    private EditContext editContext;
+    private ValidationMessageStore messageStore;
+
+    private string FullName { get; set; } = "";
+    private string PasswordConfirm { get; set; } = "";
+    private bool acceptTerms;
+    private bool isSubmitting;
+
+    private bool showPassword;
+    private bool showConfirmPassword;
+
+    private string PasswordInputType => showPassword ? "text" : "password";
+    private string ConfirmPasswordInputType => showConfirmPassword ? "text" : "password";
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+        messageStore = new ValidationMessageStore(editContext);
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        showConfirmPassword = !showConfirmPassword;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        // Clear previous manual validation messages
+        messageStore.Clear();
+        editContext.NotifyValidationStateChanged();
+
+        // Manual validations
+        if (string.IsNullOrWhiteSpace(FullName))
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(FullName)), "Vui lòng nhập họ và tên.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PasswordConfirm))
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(PasswordConfirm)), "Vui lòng xác nhận mật khẩu.");
+        }
+
+        if (model.Password != PasswordConfirm)
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(PasswordConfirm)), "Mật khẩu xác nhận không khớp.");
+        }
+
+        if (!acceptTerms)
+        {
+            messageStore.Add(new FieldIdentifier(this, nameof(acceptTerms)), "Bạn phải đồng ý với điều khoản.");
+        }
+
+        // If any manual messages were added, stop and show them
+        if (messageStore != null)
+        {
+            editContext.NotifyValidationStateChanged();
+            return;
+        }
+
+        // Split full name into first/last (simple heuristic)
+        var parts = FullName?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+        if (parts.Length > 0)
+        {
+            model.FirstName = parts.Length > 1 ? string.Join(" ", parts[..^1]) : string.Empty;
+            model.LastName = parts[^1];
+        }
+
+        model.RegisteredAt = DateTime.UtcNow;
+
+        isSubmitting = true;
+        try
+        {
+            var ok = await CustomerService.CreateItemAsync(model);
+            if (ok)
+            {
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                messageStore.Add(new FieldIdentifier(editContext.Model, string.Empty), "Đăng ký thất bại. Vui lòng thử lại.");
+                editContext.NotifyValidationStateChanged();
+            }
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

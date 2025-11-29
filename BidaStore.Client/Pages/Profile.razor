@@ -1,0 +1,80 @@
+﻿@page "/profile"
+@using DataShared.Library.Models
+@using System.Security.Claims
+@inject IService<Customer> CustomerService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "User")]
+
+<h3>Hồ sơ của tôi</h3>
+
+@if (loading)
+{
+    <p>Đang tải...</p>
+}
+else if (customer == null)
+{
+    <p>Không tìm thấy hồ sơ.</p>
+}
+else
+{
+    <EditForm Model="customer" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label class="form-label">Họ</label>
+            <InputText class="form-control" @bind-Value="customer.FirstName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tên</label>
+            <InputText class="form-control" @bind-Value="customer.LastName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="customer.Email" Disabled="true" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <InputText class="form-control" @bind-Value="customer.Address" />
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+    </EditForm>
+}
+
+@code {
+    private Customer? customer;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var sub = user.FindFirst(c => c.Type == System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+        if (!int.TryParse(sub, out var id))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        customer = await CustomerService.GetItemByIdAsync(id);
+        loading = false;
+    }
+
+    async Task Save()
+    {
+        if (customer == null) return;
+        var ok = await CustomerService.UpdateItemAsync(customer);
+        if (ok)
+        {
+            // simple feedback: reload
+            customer = await CustomerService.GetItemByIdAsync(customer.Id);
+        }
+    }
+}
