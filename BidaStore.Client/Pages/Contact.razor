@@ -1,0 +1,57 @@
+﻿@page "/contact"
+@using DataShared.Library.Models
+@using ContactModel = DataShared.Library.Models.Contact
+@inject IService<ContactModel> ContactService
+@inject NavigationManager NavigationManager
+
+<h3>Liên hệ</h3>
+
+@if (sent)
+{
+    <div class="alert alert-success">Tin nhắn đã gửi. Cảm ơn bạn!</div>
+}
+
+<EditForm Model="contact" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label class="form-label">Họ và tên</label>
+        <InputText class="form-control" @bind-Value="contact.FullName" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText class="form-control" @bind-Value="contact.Email" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Số điện thoại</label>
+        <InputText class="form-control" @bind-Value="contact.Phone" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Chủ đề</label>
+        <InputText class="form-control" @bind-Value="contact.Subject" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nội dung</label>
+        <InputTextArea class="form-control" @bind-Value="contact.Message" />
+    </div>
+    <button class="btn btn-primary" type="submit">Gửi</button>
+</EditForm>
+
+@code {
+    private ContactModel contact = new ContactModel();
+    private bool sent;
+
+    async Task HandleValidSubmit()
+    {
+        var ok = await ContactService.CreateItemAsync(contact);
+        if (ok)
+        {
+            sent = true;
+            contact = new ContactModel();
+        }
+        else
+        {
+            Console.WriteLine("Contact send failed");
+        }
+    }
+}

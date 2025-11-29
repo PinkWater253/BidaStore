@@ -1,0 +1,72 @@
+﻿@page "/admin/orders"
+@using DataShared.Library.Models
+@inject IService<Order> OrderService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Quản lý Đơn hàng</h3>
+
+@if (orders == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!orders.Any())
+{
+    <p>Chưa có đơn hàng.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Khách hàng</th>
+                <th>Trạng thái</th>
+                <th>Thanh toán</th>
+                <th>Ngày</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in orders)
+            {
+                <tr>
+                    <td>@o.Id</td>
+                    <td>@o.ReceiverName (@o.ReceiverPhone)</td>
+                    <td>@o.OrderStatus</td>
+                    <td>@o.PaymentStatus</td>
+                    <td>@(o.CreateAt?.ToString("g") ?? "-")</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => View(o.Id)">Chi tiết</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteOrder(o.Id)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Order>? orders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await OrderService.GetItemsAsync();
+    }
+
+    void View(int id) => NavigationManager.NavigateTo($"/admin/orders/{id}");
+
+    async Task DeleteOrder(int id)
+    {
+        var ok = await OrderService.DeleteItemAsync(id);
+        if (ok)
+        {
+            orders = await OrderService.GetItemsAsync();
+        }
+        else
+        {
+            Console.WriteLine($"Delete failed for order {id}");
+        }
+    }
+}
