@@ -1,0 +1,48 @@
+﻿@page "/posts"
+@using DataShared.Library.Models
+@inject IService<Post> PostService
+@inject NavigationManager NavigationManager
+
+<h3>Tin tức & Cộng đồng</h3>
+
+@if (posts == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!posts.Any())
+{
+    <p>Chưa có bài viết.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var p in posts)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    @if (!string.IsNullOrWhiteSpace(p.Img))
+                    {
+                        <img class="card-img-top" src="@p.Img" alt="@p.Title" />
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@p.Title</h5>
+                        <p class="card-text">@(p.Content?.Length > 200 ? p.Content[..200] + "..." : p.Content)</p>
+                        <button class="btn btn-sm btn-primary" @onclick="() => Open(p.Id)">Xem</button>
+                    </div>
+                    <div class="card-footer text-muted">@p.CreateAt?.ToString("g")</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Post>? posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await PostService.GetItemsAsync();
+    }
+
+    void Open(int id) => NavigationManager.NavigateTo($"/posts/{id}");
+}
