@@ -11,31 +11,31 @@ public partial class Customer
 
     public string? LastName { get; set; }
 
-    public string? Address { get; set; }
+    public string Email { get; set; } = null!;
 
     public string? Phone { get; set; }
 
-    public string Email { get; set; } = null!;
+    public string? Address { get; set; }
 
     public string? Img { get; set; }
 
-    public DateTime RegisteredAt { get; set; }
-
-    public DateTime? UpdateAt { get; set; }
-
-    public DateOnly? DateOfBirth { get; set; }
-
     public string Password { get; set; } = null!;
 
-    public string? VerificationToken { get; set; }
+    public string? RandomKey { get; set; }
+
+    public int? Role { get; set; }
 
     public bool? IsActive { get; set; }
 
-    public int? RoleId { get; set; }
+    public DateTime? RegisteredAt { get; set; }
+
+    public DateTime? UpdateAt { get; set; }
 
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 }

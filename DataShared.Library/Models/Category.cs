@@ -11,7 +11,7 @@ public partial class Category
 
     public string? Content { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
 

@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 namespace DataShared.Library.Models;
 
-public partial class Cart
+public partial class Feedback
 {
     public int Id { get; set; }
 
-    public int CustomerId { get; set; }
-
     public int ProductId { get; set; }
 
-    public int? Quantity { get; set; }
+    public int CustomerId { get; set; }
+
+    public int Rating { get; set; }
+
+    public string? Comment { get; set; }
 
     public DateTime? CreateAt { get; set; }
 

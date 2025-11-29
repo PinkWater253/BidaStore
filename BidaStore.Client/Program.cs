@@ -42,5 +42,6 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("BidaStore.API"));
 
 builder.Services.AddScoped<IService<Product>, ProductService>();
+builder.Services.AddScoped<IService<Category>, CategoryService>();
 
 await builder.Build().RunAsync();

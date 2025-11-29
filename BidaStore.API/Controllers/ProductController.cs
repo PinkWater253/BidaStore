@@ -38,27 +38,27 @@ namespace BidaStore.API.Controllers
 
         // POST: api/Product
         [HttpPost]
+        [Authorize]
         public IActionResult CreateProduct([FromBody] Product product)
         {
-            if (product == null)
-            {
-                return BadRequest();
-            }
 
-            // Thêm một số giá trị mặc định nếu cần
-            product.CreatedAt = DateTime.Now;
+            if (product == null) { return BadRequest(); }
+
+            // Thêm các giá trị mặc định mà Client không gửi
+            product.CreateAt = DateTime.Now;
 
             _context.Products.Add(product);
             _context.SaveChanges();
 
-            // Trả về sản phẩm đã tạo cùng với action GetProduct
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            return Ok(product);
         }
-
+        
         // PUT: api/Product/5
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult UpdateProduct(int id, [FromBody] Product product)
         {
+        
             if (id != product.Id)
             {
                 return BadRequest("Product ID mismatch");
@@ -76,8 +76,9 @@ namespace BidaStore.API.Controllers
             existingProduct.Price = product.Price;
             existingProduct.Img = product.Img;
             existingProduct.Rating = product.Rating;
+            existingProduct.BrandId = product.BrandId;
             existingProduct.CategoryId = product.CategoryId;
-            existingProduct.UpdateAt = DateTime.Now; // Cập nhật thời gian
+            existingProduct.UpdateAt = DateTime.Now;
 
             try
             {
@@ -85,22 +86,16 @@ namespace BidaStore.API.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Xử lý trường hợp có lỗi tương tranh (concurrency)
-                if (!_context.Products.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!_context.Products.Any(e => e.Id == id)) { return NotFound(); }
+                else { throw; }
             }
 
-            return Ok(existingProduct); // Trả về sản phẩm đã cập nhật
+            return Ok(existingProduct);
         }
-
+        
         // DELETE: api/Product/5
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult DeleteProduct(int id)
         {
             var product = _context.Products.Find(id);

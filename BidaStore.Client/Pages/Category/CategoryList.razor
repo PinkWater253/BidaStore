@@ -1,0 +1,118 @@
+﻿@page "/categories"
+@inject IService<Category> CategoryService
+
+<h3>CategoryList</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <button class="btn btn-success" @onclick="ShowCreateModal">
+            <span class="oi oi-plus" aria-hidden="true"></span> Create New Product
+        </button>
+    </Authorized>
+</AuthorizeView>
+
+@if(categories == null)
+{
+    <h3>Loading...</h3>
+} else {
+    <table>
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>Tên loại sản phẩm</td>
+                <td>Mô tả</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in categories)
+            {
+                <tr>
+                    <td>@category.Id</td>
+                    <td>@category.Title</td>
+                    <td>@category.Content</td>
+                    <AuthorizeView>
+                        <Authorized>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(category)">
+                                    Edit
+                                </button>
+                                <button class_alias="btn btn-sm btn-danger" @onclick="() => DeleteProduct(category)">
+                                    Delete
+                                </button>
+                            </td>
+                        </Authorized>
+                    </AuthorizeView>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+<CategoryModal IsVisible="isModalVisible"
+               category="currentItem"
+               OnClose="CloseModal"
+               OnSaveSuccess="HandleSaveSuccess"></CategoryModal>
+
+@code {
+    private bool isModalVisible = false;
+    private Category currentItem = new();
+
+    public List<Category>? categories = new List<Category>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        categories = await CategoryService.GetItemsAsync();
+    }
+
+    private void ShowCreateModal()
+    {
+        currentItem = new Category();
+        isModalVisible = true;
+    }
+
+    private void CloseModal()
+    {
+        isModalVisible = false;
+    }
+
+    private async Task HandleSaveSuccess()
+    {
+        isModalVisible = false;
+        await LoadCategoriesAsync();
+    }
+
+    private async Task ShowEditModal(Category category)
+    {
+        currentItem = new Category
+        {
+            Id = category.Id,
+            Title = category.Title,
+            Content = category.Content
+        };
+        isModalVisible = true;
+    }
+
+    private async Task DeleteProduct(Category category)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete category '{category.Title}'?");
+        if (confirmed)
+        {
+            bool success = await CategoryService.DeleteItemAsync(category.Id);
+            if (success)
+            {
+                await LoadCategoriesAsync();
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error: Unable to delete category. Please try again.");
+            }
+        }
+    }
+}
