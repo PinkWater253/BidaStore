@@ -1,0 +1,27 @@
+﻿<EditForm Model="@category" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    
+    <div class="mb-3">
+        <label for="title">Tên loại sản phẩm</label>
+        <InputText id="title" @bind-Value="category.Title" class="form-control" />
+        <ValidationMessage For="@(() => category.Title)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="description">Mô tả</label>
+        <InputTextArea id="description" @bind-Value="category.Content" class="form-control" />
+        <ValidationMessage For="@(() => category.Content)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a href="/Products" class="btn btn-link">Huỷ</a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Category category { get; set; } = new Category();
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+}
+

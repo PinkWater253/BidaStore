@@ -13,13 +13,13 @@ public partial class Post
 
     public string? Img { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime? UpdateAt { get; set; }
-
     public int CustomerId { get; set; }
 
     public bool? IsApproved { get; set; }
+
+    public DateTime? CreateAt { get; set; }
+
+    public DateTime? UpdateAt { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
 }

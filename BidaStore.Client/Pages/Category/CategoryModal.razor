@@ -1,0 +1,109 @@
+﻿@inject IService<Category> CategoryService
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1050;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+        opacity: 0.5;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1055;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        outline: 0;
+        display: block;
+    }
+
+    .modal-dialog.modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+    }
+</style>
+
+@if (IsVisible)
+{
+    @* Lớp mờ phía sau *@
+    <div class="modal-backdrop fade show"></div>
+
+    @* Hộp thoại Modal *@
+    <div class="modal fade show" tabindex="-1" style="display: block;">
+        @* Thêm "modal-dialog-centered" để căn giữa popup *@
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModalAsync"></button>
+                </div>
+
+                <div class="modal-body">
+                    <CategoryForm category="category" OnValidSubmit="HandleSaveAsync"/>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public Category category { get; set; } = new Category();
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; } // Gửi sự kiện "đóng" ra ngoài
+
+    [Parameter]
+    public EventCallback OnSaveSuccess { get; set; } // Gửi sự kiện "lưu thành công"
+
+    private string Title => category.Id == 0 ? "Create New Category" : "Edit Category";
+
+    private async Task HandleSaveAsync()
+    {
+        bool success = false;
+        try
+        {
+            if (category.Id == 0) // Create (POST)
+            {
+                success = await CategoryService.CreateItemAsync(category);
+            }
+            else // Update (PUT)
+            {
+                success = await CategoryService.UpdateItemAsync(category);
+            }
+
+            if (success)
+            {
+                await OnSaveSuccess.InvokeAsync();
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Lỗi: Không thể thêm loại sản phẩm. Vui lòng kiểm tra dữ liệu hoặc trạng thái đăng nhập.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Đã xảy ra lỗi hệ thống: {ex.Message}");
+        }
+    }
+    private async Task CloseModalAsync()
+    {
+        // Báo cho cha (ProductList) biết là modal cần được đóng
+        await OnClose.InvokeAsync();
+    }
+}

@@ -46,7 +46,7 @@ else
                     @* ... (các <td> giữ nguyên) ... *@
                     <td>...</td>
                     <td>@product.Title</td>
-                    <td>@product.Price.ToString("N0") VNĐ</td>
+                    <td>@product.Price VNĐ</td>
                     <td>@product.ShortDescription</td>
 
                     @* CHỈ HIỂN THỊ CÁC NÚT NÀY KHI ĐÃ ĐĂNG NHẬP *@
@@ -116,9 +116,6 @@ else
     // Mở modal ở chế độ "Edit"
     private void ShowEditModal(Product productToEdit)
     {
-        // Rất quan trọng: Tạo một bản sao của sản phẩm để chỉnh sửa.
-        // Nếu không, việc thay đổi trên form sẽ thay đổi trực tiếp
-        // sản phẩm trong bảng (ngay cả khi chưa nhấn Save).
         currentProduct = new Product
         {
             Id = productToEdit.Id,
@@ -127,8 +124,9 @@ else
             Price = productToEdit.Price,
             Img = productToEdit.Img,
             Rating = productToEdit.Rating,
-            CategoryId = productToEdit.CategoryId
-            // Các thuộc tính khác nếu có...
+            CategoryId = productToEdit.CategoryId,
+            BrandId = productToEdit.BrandId,
+            UpdateAt = DateTime.Now,
         };
 
         isModalVisible = true;
@@ -157,7 +155,7 @@ else
             try
             {
                 await ProductService.DeleteItemAsync(productToDelete.Id);
-                await LoadProductsAsync(); // Tải lại danh sách
+                await LoadProductsAsync();
             }
             catch (Exception ex)
             {

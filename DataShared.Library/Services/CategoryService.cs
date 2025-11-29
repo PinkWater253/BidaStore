@@ -12,29 +12,32 @@ namespace DataShared.Library.Services
             _httpClient = httpClient;
         }
 
-        public Task<bool> CreateItemAsync(Category item)
+        public async Task<bool> CreateItemAsync(Category item)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.PostAsJsonAsync("api/Category", item);
+            return response.IsSuccessStatusCode;
         }
 
-        public Task<bool> DeleteItemAsync(int id)
+        public async Task<bool> DeleteItemAsync(int id)
         {
-            throw new NotImplementedException();
+            var response = await  _httpClient.DeleteAsync($"api/Category/{id}");
+            return response.IsSuccessStatusCode;
         }
 
         public Task<Category?> GetItemByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetFromJsonAsync<Category>($"api/Category/{id}");
         }
 
-        public async Task<List<Category>?> GetItemsAsync()
+        public Task<List<Category>?> GetItemsAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<Category>>("api/Category");
+            return _httpClient.GetFromJsonAsync<List<Category>>("api/Category");
         }
 
-        public Task<bool> UpdateItemAsync(Category item)
+        public async Task<bool> UpdateItemAsync(Category item)
         {
-            throw new NotImplementedException();
+            var response = await  _httpClient.PutAsJsonAsync($"api/Category/{item.Id}", item);
+            return response.IsSuccessStatusCode;
         }
     }
 }
