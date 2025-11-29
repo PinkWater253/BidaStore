@@ -11,7 +11,6 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using DataShared.Library.Services;
 using DataShared.Library.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -41,7 +40,16 @@ builder.Services.AddHttpClient("BidaStore.API", client =>
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("BidaStore.API"));
 
+// Client-side service registrations
 builder.Services.AddScoped<IService<Product>, ProductService>();
 builder.Services.AddScoped<IService<Category>, CategoryService>();
+builder.Services.AddScoped<IService<Brand>, BrandService>();
+builder.Services.AddScoped<IService<Cart>, CartService>();
+builder.Services.AddScoped<IService<Contact>, ContactService>();
+builder.Services.AddScoped<IService<Customer>, CustomerService>();
+builder.Services.AddScoped<IService<Feedback>, FeedbackService>();
+builder.Services.AddScoped<IService<Order>, OrderService>();
+builder.Services.AddScoped<IService<OrderDetail>, OrderDetailService>();
+builder.Services.AddScoped<IService<Post>, PostService>();
 
 await builder.Build().RunAsync();

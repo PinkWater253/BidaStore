@@ -1,34 +1,82 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using DataShared.Library.Models
+@using DataShared.Library.Services
+
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
+@inject IService<Category> CategoryService
+@inject IService<Brand> BrandService
 
 <aside id="sidebar" class="sidebar">
 
     <ul class="sidebar-nav" id="sidebar-nav">
 
         @* ==================================================================
-           PHẦN DÀNH RIÊNG CHO ADMIN (GIỮ NGUYÊN)
+           PHẦN DÀNH RIÊNG CHO ADMIN
            ================================================================== *@
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <li class="nav-heading">Quản Trị Viên</li>
-                @* ... (Các menu Admin cũ của bạn giữ nguyên ở đây) ... *@
+
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="admin/dashboard"><i class="bi bi-grid"></i><span>Dashboard</span></NavLink>
+                    <NavLink class="nav-link" href="admin/dashboard">
+                        <i class="bi bi-grid"></i>
+                        <span>Dashboard</span>
+                    </NavLink>
                 </li>
-                @* ... *@
+
+                <li class="nav-item">
+                    <a class="nav-link collapsed" data-bs-target="#admin-manage-nav" data-bs-toggle="collapse" href="#">
+                        <i class="bi bi-menu-button-wide"></i><span>Quản lý Cửa Hàng</span><i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul id="admin-manage-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                        <li>
+                            <NavLink href="admin/customers">
+                                <i class="bi bi-circle"></i><span>Người dùng</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink href="admin/categories">
+                                <i class="bi bi-circle"></i><span>Loại sản phẩm</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink href="Products">
+                                @* Admin dùng chung trang Products nhưng có quyền sửa xóa *@
+                                <i class="bi bi-circle"></i><span>Sản phẩm</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink href="admin/orders">
+                                <i class="bi bi-circle"></i><span>Đơn hàng</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink href="admin/posts">
+                                <i class="bi bi-circle"></i><span>Bài viết</span>
+                            </NavLink>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link collapsed" href="admin/statistics">
+                        <i class="bi bi-bar-chart"></i>
+                        <span>Thống kê</span>
+                    </NavLink>
+                </li>
             </Authorized>
         </AuthorizeView>
 
         @* ==================================================================
-           PHẦN DÀNH CHO USER VÀ KHÁCH (GUEST)
+           PHẦN MENU CỬA HÀNG (FLYOUT) - HIỂN THỊ CHO USER VÀ KHÁCH
+           (Logic: Hiển thị nếu KHÔNG phải là Admin)
            ================================================================== *@
-        @* Logic: Hiển thị nếu KHÔNG phải là Admin *@
         <AuthorizeView Roles="Admin">
             <NotAuthorized>
                 <li class="nav-heading">Cửa Hàng</li>
 
-                @* 1. Mục Trang Chủ *@
+                @* 1. Trang Chủ *@
                 <li class="nav-item">
                     <NavLink class="nav-link collapsed" href="/" Match="NavLinkMatch.All">
                         <i class="bi bi-shop"></i>
@@ -36,7 +84,7 @@
                     </NavLink>
                 </li>
 
-                @* 2. Mục LOẠI SẢN PHẨM (Flyout) *@
+                @* 2. LOẠI SẢN PHẨM (Flyout Menu) *@
                 <li class="nav-item nav-item-flyout">
                     <a class="nav-link collapsed" href="Products" style="cursor: pointer;">
                         <i class="bi bi-menu-button-wide"></i>
@@ -44,27 +92,26 @@
                         <i class="bi bi-chevron-right ms-auto" style="font-size: 0.8em;"></i>
                     </a>
 
-                    @* Dropdown bên phải *@
+                    @* Menu con hiển thị bên phải khi hover *@
                     <ul class="flyout-menu">
                         <li class="flyout-header">Chọn loại sản phẩm</li>
-                        @if (categories != null)
+                        @if (categories != null && categories.Any())
                         {
                             @foreach (var cat in categories)
                             {
                                 <li>
-                                    @* Link đến trang lọc theo Category *@
                                     <a href="@($"products?categoryId={cat.Id}")">@cat.Title</a>
                                 </li>
                             }
                         }
                         else
                         {
-                            <li><a href="#">Đang tải...</a></li>
+                            <li><a href="#">@(categories == null ? "Đang tải..." : "Chưa có danh mục")</a></li>
                         }
                     </ul>
                 </li>
 
-                @* 3. Mục THƯƠNG HIỆU (Flyout) *@
+                @* 3. THƯƠNG HIỆU (Flyout Menu) *@
                 <li class="nav-item nav-item-flyout">
                     <a class="nav-link collapsed" href="Products" style="cursor: pointer;">
                         <i class="bi bi-tags"></i>
@@ -72,28 +119,32 @@
                         <i class="bi bi-chevron-right ms-auto" style="font-size: 0.8em;"></i>
                     </a>
 
-                    @* Dropdown bên phải *@
                     <ul class="flyout-menu">
                         <li class="flyout-header">Chọn nhà cung cấp</li>
-                        @if (brands != null)
+                        @if (brands != null && brands.Any())
                         {
                             @foreach (var brand in brands)
                             {
                                 <li>
-                                    @* Link đến trang lọc theo Brand *@
                                     <a href="@($"products?brandId={brand.Id}")">@brand.Name</a>
                                 </li>
                             }
                         }
                         else
                         {
-                            <li><a href="#">Đang tải...</a></li>
+                            <li><a href="#">@(brands == null ? "Đang tải..." : "Chưa có thương hiệu")</a></li>
                         }
                     </ul>
                 </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link collapsed" href="posts">
+                        <i class="bi bi-newspaper"></i>
+                        <span>Tin tức & Cộng đồng</span>
+                    </NavLink>
+                </li>
             </NotAuthorized>
         </AuthorizeView>
-
 
         @* ==================================================================
            PHẦN TÀI KHOẢN CÁ NHÂN (CHỈ HIỆN KHI ĐÃ ĐĂNG NHẬP LÀ USER)
@@ -108,7 +159,12 @@
                 </li>
                 <li class="nav-item">
                     <NavLink class="nav-link collapsed" href="my-orders">
-                        <i class="bi bi-bag-check"></i><span>Đơn hàng</span>
+                        <i class="bi bi-bag-check"></i><span>Đơn hàng của tôi</span>
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link collapsed" href="wishlist">
+                        <i class="bi bi-heart"></i><span>Sản phẩm yêu thích</span>
                     </NavLink>
                 </li>
                 <li class="nav-item">
@@ -136,6 +192,20 @@
                     </NavLink>
                 </li>
             </NotAuthorized>
+            <Authorized>
+                @* Nút đăng xuất cho Admin (để ở cuối cùng nếu Admin đang xem) *@
+                @* User đã có nút đăng xuất ở trên, Admin có thể dùng chung hoặc riêng *@
+                <AuthorizeView Roles="Admin" Context="adminContext">
+                    <Authorized>
+                        <li class="nav-heading mt-3">Hệ thống</li>
+                        <li class="nav-item">
+                            <button class="nav-link collapsed w-100 text-start border-0 bg-transparent" @onclick="HandleLogout">
+                                <i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span>
+                            </button>
+                        </li>
+                    </Authorized>
+                </AuthorizeView>
+            </Authorized>
         </AuthorizeView>
 
     </ul>
@@ -148,7 +218,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Tải dữ liệu cho menu
         await LoadMenuData();
     }
 
@@ -156,10 +225,18 @@
     {
         try
         {
+            // Tải song song để tối ưu hiệu suất
+            var catTask = CategoryService.GetItemsAsync();
+            var brandTask = BrandService.GetItemsAsync();
+
+            await Task.WhenAll(catTask, brandTask);
+
+            categories = await catTask;
+            brands = await brandTask;
         }
-        catch
+        catch (Exception ex)
         {
-            // Xử lý lỗi âm thầm hoặc log
+            Console.WriteLine($"Error loading menu: {ex.Message}");
         }
     }
 
